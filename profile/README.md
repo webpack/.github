@@ -1,11 +1,6 @@
 # 🌟 webpack: A Module Bundler for Modern JavaScript Applications
 
-[![webpack logo](https://webpack.js.org/assets/icon-square-big.svg)](https://webpack.js.org)
-
-[![npm version](https://img.shields.io/npm/v/webpack.svg?style=flat)](https://www.npmjs.com/package/webpack)
-[![Build Status](https://github.com/webpack/webpack/actions/workflows/ci.yml/badge.svg)](https://github.com/webpack/webpack/actions)
-[![Contributors](https://img.shields.io/github/contributors/webpack/webpack.svg)](https://github.com/webpack/webpack/graphs/contributors)
-[![MIT License](https://img.shields.io/github/license/webpack/webpack.svg)](https://github.com/webpack/webpack/blob/main/LICENSE)
+## Todo insert banner
 
 **webpack** is a powerful **static module bundler** for modern JavaScript applications. It processes your application and generates optimized bundles, making your code fast, efficient, and production-ready. Whether you’re building simple sites or complex applications, webpack has you covered.
 
