@@ -2,7 +2,7 @@
 
 ## Todo insert banner
 
-**webpack** is a powerful **static module bundler** for modern JavaScript applications. It processes your application and generates optimized bundles, making your code fast, efficient, and production-ready. Whether you’re building simple sites or complex applications, webpack has you covered.
+**webpack** is a powerful **module bundler** for modern JavaScript applications. It processes your application and generates optimized bundles, making your code fast, efficient, and production-ready. Whether you’re building simple sites or complex applications, webpack has you covered.
 
 
 ## 📖 Documentation
