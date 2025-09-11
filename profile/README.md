@@ -1,4 +1,6 @@
+<div align="center">
 <img src="./webpack_banner.png" alt="webpack banner" height="320" width="640" />
+</div>
 
 <p align="center">
   <b>webpack is a powerful and flexible module bundler for JavaScript applications.</b>
