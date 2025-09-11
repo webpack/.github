@@ -1,5 +1,5 @@
 <div align="center">
-<img src="./logo-on-white-bg.png" alt="webpack logo" height="320" width="640" />
+<img src="./logo-on-dark-bg.png" alt="webpack logo" height="320" width="640" />
 </div>
 
 <p align="center">
