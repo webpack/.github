@@ -5,3 +5,13 @@
 </div>
 
 <h1 align="center">webpack</h1>
+
+<p align="center">
+  <b>webpack is a powerful and flexible module bundler for JavaScript applications.</b>
+</p>
+
+<p align="center">
+  <a href="https://webpack.js.org/">Documentation</a> |
+  <a href="https://github.com/webpack/security-wg">Security</a> |
+  <a href="https://github.com/webpack/governance">Governance Model</a>
+</p>
