@@ -6,11 +6,11 @@ body:
     attributes:
       value: |
         Thank you for reporting a bug! Before submitting:
-        - Search [existing issues](https://github.com/webpack/webpack/issues) to avoid duplicates
+        - Search existing issues to avoid duplicates
         - Try the latest version of webpack
-        - For help with your project, use [Discussions](https://github.com/webpack/webpack/discussions)
+        - For help with your project, use Discussions
 
-        ⚠️ **Important**: Issues that cannot be reproduced or contain vague information will be closed. If you need help debugging your specific setup, please use [Discussions](https://github.com/webpack/webpack/discussions/new?category=q-a) instead.
+        ⚠️ **Important**: Issues that cannot be reproduced or contain vague information will be closed. If you need help debugging your specific setup, please use Discussions instead.
 
   - type: textarea
     id: description
