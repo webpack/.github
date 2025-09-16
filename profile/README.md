@@ -1,6 +1,4 @@
-<div align="center">
-<img src="https://github.com/webpack/.github/blob/cc3433bf245972445031b1097abfdcff62a81dd2/profile/logo-on-dark-bg.png" alt="webpack logo" height="320" width="640" />
-</div>
+<img src="./webpack-banner.png" alt="webpack logo" />
 
 <p align="center">
   <b>webpack is a powerful and flexible module bundler for JavaScript applications.</b>
