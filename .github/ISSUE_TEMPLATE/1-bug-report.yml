@@ -1,0 +1,108 @@
+name: Bug Report
+description: Report a bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug!
+
+        Before submitting:
+        - Search existing issues to avoid duplicates
+        - Try the latest version
+        - For questions and help, consider using [discussions](https://github.com/orgs/webpack/discussions/new/choose) or [stackoverflow](https://stackoverflow.com/questions/ask?tags=webpack), issues which contain questions, help or support requests will be closed or moved to discussions.
+
+        ⚠️ **Important**: Issues contain vague information will be closed.
+
+  - type: markdown
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: When I do X, Y happens instead of Z
+    validations:
+      required: true
+
+  - type: markdown
+    id: reproduction
+    attributes:
+      label: Link to Minimal Reproduction and step to  reproduce
+      description: |
+        Please provide a minimal reproduction using:
+        - GitHub repository with minimal configuration
+        - Clear steps to reproduce the behavior
+
+        **If a minimal reproduction is difficult** (e.g., performance issues in large projects with thousands of files):
+        - Describe your project structure in detail
+        - Include your full configuration
+        - Provide specific metrics (build times, memory usage, file counts)
+      placeholder: |
+        https://github.com/user/repro
+        
+        Steps:
+        1. Run 'npm install'
+        2. Run 'npm run build'
+        3. See error in console
+
+        OR for complex cases:
+        - Build takes 30+ minutes
+        - Issue only appears with specific combinations of loaders/plugins
+    validations:
+      required: true
+
+  - type: markdown
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+    validations:
+      required: true
+
+  - type: markdown
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        Please run `npx webpack info` and paste the output here
+      render: shell
+      placeholder: |
+        System:
+          OS: macOS 14.0.0
+          CPU: (12) arm64 Apple M1
+          Memory: 16.00 GB
+        Binaries:
+          Node: 22.17.0
+          npm: 10.0.0
+        Packages:
+          webpack: 5.100.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: regression
+    attributes:
+      label: Is this a regression?
+      description: Did this work in a previous version?
+      options:
+        - "No"
+        - "Yes (please specify version below)"
+
+  - type: input
+    id: regression-version
+    attributes:
+      label: Last Working Version
+      description: If regression, which version worked?
+      placeholder: "v5.99.9"
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem (error logs, workarounds, screenshots, etc.)

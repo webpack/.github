@@ -1,0 +1,22 @@
+name: Other
+description: Something else
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for requesting a feature! 
+
+        Before submitting:
+        - Search existing issues to avoid duplicates
+        - Try the latest version
+        - For questions and help, consider using [discussions](https://github.com/orgs/webpack/discussions/new/choose) or [stackoverflow](https://stackoverflow.com/questions/ask?tags=webpack), issues which contain questions, help or support requests will be closed or moved to discussions.
+
+        ⚠️ **Important**: Issues contain vague information will be closed.
+
+  - type: markdown
+    id: description
+    attributes:
+      label: Description
+      description: Describe what you encountered
+    validations:
+      required: true
