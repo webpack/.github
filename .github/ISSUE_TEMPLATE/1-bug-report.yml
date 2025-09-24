@@ -13,7 +13,7 @@ body:
 
         ⚠️ **Important**: Issues contain vague information will be closed.
 
-  - type: markdown
+  - type: textarea
     id: description
     attributes:
       label: Bug Description
@@ -22,7 +22,7 @@ body:
     validations:
       required: true
 
-  - type: markdown
+  - type: textarea
     id: reproduction
     attributes:
       label: Link to Minimal Reproduction and step to  reproduce
@@ -49,7 +49,7 @@ body:
     validations:
       required: true
 
-  - type: markdown
+  - type: textarea
     id: expected
     attributes:
       label: Expected Behavior
@@ -57,7 +57,7 @@ body:
     validations:
       required: true
 
-  - type: markdown
+  - type: textarea
     id: actual
     attributes:
       label: Actual Behavior

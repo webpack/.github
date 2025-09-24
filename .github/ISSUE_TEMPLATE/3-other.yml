@@ -13,7 +13,7 @@ body:
 
         ⚠️ **Important**: Issues contain vague information will be closed.
 
-  - type: markdown
+  - type: textarea
     id: description
     attributes:
       label: Description
