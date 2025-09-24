@@ -1,0 +1,11 @@
+name: Test
+description: Test
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Test.
+  - type: input
+    attributes:
+      label: Version
+      description: Description
