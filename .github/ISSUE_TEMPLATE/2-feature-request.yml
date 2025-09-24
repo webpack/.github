@@ -1,0 +1,36 @@
+name: Feature Request
+description: Suggest an idea for this project
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for requesting a feature! 
+
+        Before submitting:
+        - Search existing issues to avoid duplicates
+        - Try the latest version
+        - For questions and help, consider using [discussions](https://github.com/orgs/webpack/discussions/new/choose) or [stackoverflow](https://stackoverflow.com/questions/ask?tags=webpack), issues which contain questions, help or support requests will be closed or moved to discussions.
+
+        ⚠️ **Important**: Issues contain vague information will be closed.
+
+  - type: markdown
+    id: description
+    attributes:
+      label: Feature Proposal
+      description: Describe feature proposal
+    validations:
+      required: true
+
+  - type: markdown
+    id: use-case
+    attributes:
+      label: Feature Use Case
+      description: Describe the problem this feature would solve and how it would be used in practice
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about (error logs, workarounds, screenshots, etc.)

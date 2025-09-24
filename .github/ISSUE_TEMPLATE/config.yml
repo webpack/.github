@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask for help, ask questions, or start a discussion to get help from the community
+    url: https://github.com/webpack/webpack/discussions/new
+    about: Ask for help, ask questions, or start a discussion to get help from the community
