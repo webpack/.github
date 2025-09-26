@@ -6,6 +6,6 @@
 
 <p align="center">
   <a href="https://webpack.js.org/">Documentation</a> |
-  <a href="https://github.com/webpack/webpack/blob/main/SECURITY.md">Security Policy</a> |
-  <a href="https://github.com/webpack/governance">Governance Model</a>
+  <a href="https://github.com/webpack/.github/blob/main/.github/SECURITY.md">Security Policy</a> |
+  <a href="https://github.com/webpack/.github/blob/main/.github/GOVERNANCE.md">Governance Model</a>
 </p>
