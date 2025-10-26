@@ -4,6 +4,13 @@
 
 Please report security issues **privately**:
 
+- Via [GitHub Security Advisory](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability) (Preferred)
+  
+  To report a vulnerability:
+
+    1. Visit the Security tab of the affected repository on GitHub.
+    2. Click Report a vulnerability and follow the provided steps.
+ 
 - Email: [webpack-security@openjsf.org](mailto:webpack-security@openjsf.org)
 
 **Do not** file public GitHub issues for security problems.
