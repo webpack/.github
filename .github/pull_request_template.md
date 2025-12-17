@@ -10,7 +10,7 @@
 
 **What kind of change does this PR introduce?**
 
-<!-- E.g. a bugfix, feature, refactoring, build related change, etc… -->
+<!-- E.g. a fix, feat, refactor, perf, test, chore, ci, build, style, revert, docs or describe it if you did not find a suitable kind of change. -->
 
 **Did you add tests for your changes?**
 
