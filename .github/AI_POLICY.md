@@ -7,10 +7,11 @@ If a user has created a pull request the author or reviewee, is allowed to use L
 
 **ALL** issues, pull requests and comments are required to be manually written in some way by the author. If not, the maintainers in a repository will automatically delete/close the work done. If one really needs to use AI when interacting with webpack, it should be on an "assist-only" basis to fill inn small knowledge gaps, repetitive tasks or similar.
 
-**Examples of acceptable use of AI:**
+## **Examples of acceptable use of AI:**
 
 > [!NOTE]
 > Most use of AI should be done locally on your machine or setup. Do not create content based on AI (as explained in this document) in our repositories or community.
+
 
 - Your pull request is done but you use AI to review your work before submitting a PR.
 > Example prompt `> review my pull request and suggest improvements to grammar or code style`.
@@ -25,7 +26,7 @@ If a user has created a pull request the author or reviewee, is allowed to use L
 > Example prompt `> Suggest additional information in point no.2 for me`.
 
 
-**Examples of not how to use AI within webpack:**
+## **Examples of not how to use AI within webpack:**
 
 - You ask AI to create an issue for you in webpack without any context.
 > Example prompt `> create an issue in webpack that I can solve.`.
