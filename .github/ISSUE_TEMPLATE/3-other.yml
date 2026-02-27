@@ -10,9 +10,18 @@ body:
         - Search existing issues to avoid duplicates
         - Try the latest version
         - For questions and help, consider using [discussions](https://github.com/orgs/webpack/discussions/new/choose) or [stackoverflow](https://stackoverflow.com/questions/ask?tags=webpack), issues which contain questions, help or support requests will be closed or moved to discussions.
+        - Read our [AI policy](https://github.com/webpack/governance/blob/main/AI_POLICY.md)
+        ⚠️ **Important**: Issues contain vague information or with bad use of AI will be closed.
 
-        ⚠️ **Important**: Issues contain vague information will be closed.
-
+  - type: dropdown
+    id: ai
+    attributes:
+      label: Have you used AI?
+      description: If you have used AI tooling to generate the issue please state so.
+      options:
+        - "No"
+        - "Yes"
+  
   - type: textarea
     id: description
     attributes:

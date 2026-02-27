@@ -23,3 +23,8 @@
 **If relevant, what needs to be documented once your changes are merged or what have you already documented?**
 
 <!-- List all the information that needs to be added to the documentation after merge that has already been documented in this PR. -->
+
+**Use of AI**
+
+<!-- If you have used AI, please state so here. Explain how you used it. 
+Make sure to read our AI policy (https://github.com/webpack/governance/blob/main/AI_POLICY.md) or your Pull Request may be closed due inresponsible use of AI. -->
