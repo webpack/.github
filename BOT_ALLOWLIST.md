@@ -4,3 +4,4 @@ cursor
 coderabbitai[bot]
 coderabbitai
 socket-security[bot]
+socket-security
