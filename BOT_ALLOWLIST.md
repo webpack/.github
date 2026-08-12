@@ -3,3 +3,4 @@ cursor[bot]
 cursor
 coderabbitai[bot]
 coderabbitai
+socket-security[bot]
