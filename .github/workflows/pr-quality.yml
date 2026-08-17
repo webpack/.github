@@ -20,7 +20,7 @@ jobs:
             ${{ contains(fromJSON('["FIRST_TIMER","FIRST_TIME_CONTRIBUTOR","NONE"]'),
             github.event.pull_request.author_association) }}
         with:
-          max-failures: ${{ env.IS_NEW == 'true' && 2 || 3 }}
+          max-failures: ${{ env.IS_NEW == 'true' && 2 || 4 }}
           global-merge-ratio-exclude-own: ${{ env.IS_NEW == 'true' }}
           max-daily-forks: ${{ env.IS_NEW == 'true' && 4 || 7 }}
           require-pr-template: true
