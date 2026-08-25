@@ -9,6 +9,14 @@
 # workflow ever ran on -- is reported as such instead of being rounded up to a
 # pass.
 #
+# Every line also reports when the default branch was last pushed to, read
+# from the repository activity log, which records the moment the branch head
+# actually moved.  A timestamp suffixed with "~" is a fallback to the head
+# commit's own commit date, used only when the activity log is unavailable;
+# it can be far older than the push that delivered it (a rebase, a merge of a
+# stale branch, an imported commit).  The repository-level `pushed_at` is not
+# used at all: it counts pushes to *any* branch.
+#
 #   ORG=webpack ./org-workflows-on-main.sh
 #
 # Environment:
@@ -48,6 +56,56 @@ if [ -t 1 ]; then
 else
     BOLD=""; DIM=""; RESET=""; GREEN=""; RED=""; YELLOW=""; CYAN=""
 fi
+
+# ---------------------------------------------------------------------------
+# Timestamps
+# ---------------------------------------------------------------------------
+
+# BSD date (macOS) and GNU date parse ISO-8601 with different flags; probe once
+# rather than guessing from `uname`.
+if date -u -j -f '%Y-%m-%dT%H:%M:%SZ' '2000-01-01T00:00:00Z' +%s >/dev/null 2>&1; then
+    DATE_STYLE=bsd
+else
+    DATE_STYLE=gnu
+fi
+
+epoch_of() {
+    case "$DATE_STYLE" in
+        bsd) date -u -j -f '%Y-%m-%dT%H:%M:%SZ' "$1" +%s 2>/dev/null ;;
+        *)   date -u -d "$1" +%s 2>/dev/null ;;
+    esac
+}
+
+# fmt_age <seconds> -> "5d4h".  Two units, so the number keeps its meaning as
+# it grows: "5d" alone cannot distinguish five days from nearly six.
+fmt_age() {
+    local d="$1"
+    [ "$d" -lt 0 ] && d=0
+    if   [ "$d" -lt 60 ];       then printf '%ds' "$d"
+    elif [ "$d" -lt 3600 ];     then printf '%dm%ds'  $(( d / 60 ))      $(( d % 60 ))
+    elif [ "$d" -lt 86400 ];    then printf '%dh%dm'  $(( d / 3600 ))    $(( d % 3600 / 60 ))
+    elif [ "$d" -lt 2592000 ];  then printf '%dd%dh'  $(( d / 86400 ))   $(( d % 86400 / 3600 ))
+    elif [ "$d" -lt 31536000 ]; then printf '%dmo%dd' $(( d / 2592000 )) $(( d % 2592000 / 86400 ))
+    else                             printf '%dy%dmo' $(( d / 31536000 )) $(( d % 31536000 / 2592000 ))
+    fi
+}
+
+# fmt_pushed <iso-8601>[~] -> "2026-08-25T09:26:47Z (5d4h)".  The full UTC
+# timestamp is reported verbatim so two repositories pushed minutes apart can
+# still be told apart; the age beside it is only a scanning aid.  A trailing
+# "~" survives into the output to mark a commit-date fallback.
+fmt_pushed() {
+    local ts="$1" mark="" t0 now
+    if [ -z "$ts" ] || [ "$ts" = "-" ]; then printf '%s' "-"; return; fi
+
+    case "$ts" in *'~') mark="~"; ts="${ts%\~}" ;; esac
+
+    t0=$(epoch_of "$ts")
+    if [ -z "$t0" ]; then printf '%s%s' "$ts" "$mark"; return; fi
+
+    now=$(date -u +%s)
+    printf '%s (%s)%s' "$ts" "$(fmt_age $(( now - t0 )))" "$mark"
+}
 
 # ---------------------------------------------------------------------------
 # API helper
@@ -111,29 +169,61 @@ api_error() {
 }
 
 # ---------------------------------------------------------------------------
-# Per-repository check.  Emits a single "<state>\t<label>\t<detail>" line.
+# Per-repository check.  Emits a single
+# "<state>\t<label>\t<pushed>\t<detail>" line, where <pushed> is the ISO-8601
+# time of the last push to the default branch ("~"-suffixed when it is a
+# commit-date fallback), or "-" when it could not be read at all.
 # ---------------------------------------------------------------------------
 
 check_repo() {
     local repo="$1" branch="$2"
     local body sha link="https://github.com/$ORG/$repo"
+    # Every exit path reports the same four fields; `pushed` starts unknown so
+    # the early returns below stay honest instead of inventing a timestamp.
+    local pushed="-"
+
+    # emit <state> <label> <detail>
+    emit() { printf '%s\t%s\t%s\t%s\n' "$1" "$2" "$pushed" "$3"; }
 
     if [ -z "$branch" ]; then
-        printf 'empty\tempty\tno default branch | %s\n' "$link"
+        emit empty empty "no default branch | $link"
         return
     fi
 
     # ---- head commit ------------------------------------------------------
     # Resolve the head SHA once and pin every later request to it, so a push
     # landing mid-scan cannot mix checks from two different commits.
+    local rc commit_date
     if ! body=$(gh_api "repos/$ORG/$repo/commits/$branch"); then
-        printf 'error\tapi-error\t%s | %s\n' "$(api_error "$body")" "$link"
+        emit error api-error "$(api_error "$body") | $link"
         return
     fi
     sha=$(jq -r '.sha // empty' <<< "$body")
+    commit_date=$(jq -r '(.commit.committer.date // .commit.author.date) // empty' <<< "$body")
     if [ -z "$sha" ]; then
-        printf 'error\tapi-error\tno head commit | %s\n' "$link"
+        emit error api-error "no head commit | $link"
         return
+    fi
+
+    # ---- last push to the default branch ----------------------------------
+    # The activity log timestamps the moment the branch head moved, which is
+    # what "last push" means.  The commit date only coincides with it when the
+    # author pushed their own commit immediately; a rebase, a merge of a stale
+    # branch or an imported commit all make it read older than the push.  So
+    # the commit date is a marked fallback, never a silent substitute.
+    local activity_raw
+    activity_raw=$(gh_api "repos/$ORG/$repo/activity?ref=refs/heads/$branch&per_page=10")
+    rc=$?
+    if [ $rc -eq 0 ]; then
+        # branch_deletion is the one activity that does not leave a head to
+        # report; everything else (push, force_push, pr_merge, merge_queue_merge,
+        # branch_creation) moved the branch.
+        pushed=$(jq -r 'first(.[]? | select(.activity_type != "branch_deletion") | .timestamp) // empty' \
+                    <<< "$activity_raw")
+    fi
+    if [ -z "$pushed" ] || [ "$pushed" = "-" ]; then
+        pushed="${commit_date:+$commit_date~}"
+        [ -n "$pushed" ] || pushed="-"
     fi
 
     # ---- workflow runs pinned to this commit ------------------------------
@@ -141,14 +231,14 @@ check_repo() {
     # Dependabot's "dynamic/" security updates.  Those attach check runs to the
     # head commit but are not the project's CI, and a failing one used to make
     # a perfectly green repository look broken.
-    local runs_raw runs foreign rc actions_off=0
+    local runs_raw runs foreign actions_off=0
     runs_raw=$(gh_api "repos/$ORG/$repo/actions/runs?head_sha=$sha&per_page=100&exclude_pull_requests=true")
     rc=$?
     if [ $rc -eq 2 ]; then
         runs_raw='{"workflow_runs":[]}'
         actions_off=1
     elif [ $rc -ne 0 ]; then
-        printf 'error\tapi-error\tactions/runs: %s | %s\n' "$(api_error "$runs_raw")" "$link"
+        emit error api-error "actions/runs: $(api_error "$runs_raw") | $link"
         return
     fi
     if [ "$INCLUDE_DYNAMIC_RUNS" = "1" ]; then
@@ -185,7 +275,7 @@ check_repo() {
         checks_raw='[{"total_count":0,"check_runs":[]}]'
         checks_404=1
     elif [ $rc -ne 0 ]; then
-        printf 'error\tapi-error\tcheck-runs: %s | %s\n' "$(api_error "$checks_raw")" "$link"
+        emit error api-error "check-runs: $(api_error "$checks_raw") | $link"
         return
     fi
 
@@ -215,13 +305,13 @@ check_repo() {
           }" <<< "$checks_raw")
 
     if [ -z "$checks" ]; then
-        printf 'error\tparse-error\tunparseable check-runs response | %s\n' "$link"
+        emit error parse-error "unparseable check-runs response | $link"
         return
     fi
 
     if [ "$(jq -r '.truncated' <<< "$checks")" = "true" ]; then
-        printf 'error\ttruncated\tgot %s of %s check runs | %s\n' \
-            "$(jq -r '.received' <<< "$checks")" "$(jq -r '.expected' <<< "$checks")" "$link"
+        emit error truncated \
+            "got $(jq -r '.received' <<< "$checks") of $(jq -r '.expected' <<< "$checks") check runs | $link"
         return
     fi
 
@@ -230,7 +320,7 @@ check_repo() {
     local unknown
     unknown=$(jq -r '.unknown | join(", ")' <<< "$checks")
     if [ -n "$unknown" ]; then
-        printf 'error\tunknown\tunhandled conclusion: %s | %s\n' "$unknown" "$link"
+        emit error unknown "unhandled conclusion: $unknown | $link"
         return
     fi
 
@@ -242,7 +332,7 @@ check_repo() {
         status_raw='{"statuses":[]}'
         checks_404=1
     elif [ $rc -ne 0 ]; then
-        printf 'error\tapi-error\tstatus: %s | %s\n' "$(api_error "$status_raw")" "$link"
+        emit error api-error "status: $(api_error "$status_raw") | $link"
         return
     fi
     statuses=$(jq -c '
@@ -280,21 +370,20 @@ check_repo() {
 
     if [ "$n_fail" -gt 0 ]; then
         names=$(jq -r '.fail[:4] | join(", ")' <<< "$verdict")
-        printf 'failure\tfailure\t%d failing (%s%s) | %s\n' \
-            "$n_fail" "$names" "$([ "$n_fail" -gt 4 ] && printf ', …')" "$link"
+        emit failure failure \
+            "$n_fail failing ($names$([ "$n_fail" -gt 4 ] && printf ', …')) | $link"
         return
     fi
 
     if [ "$n_pending" -gt 0 ]; then
-        printf 'pending\tpending\t%d still running | %s\n' "$n_pending" "$link"
+        emit pending pending "$n_pending still running | $link"
         return
     fi
 
     # Nothing failed outright, but nothing conclusively passed either.
     if [ "$n_cancelled" -gt 0 ]; then
         names=$(jq -r '.cancelled[:3] | join(", ")' <<< "$verdict")
-        printf 'cancelled\tcancelled\t%d cancelled, no failure (%s) | %s\n' \
-            "$n_cancelled" "$names" "$link"
+        emit cancelled cancelled "$n_cancelled cancelled, no failure ($names) | $link"
         return
     fi
 
@@ -308,32 +397,31 @@ check_repo() {
             if [ $rc -eq 0 ]; then
                 wf_active=$(jq -r '[.workflows[]? | select(.state == "active")] | length' <<< "$body")
             elif [ $rc -ne 2 ]; then
-                printf 'error\tapi-error\tworkflows: %s | %s\n' "$(api_error "$body")" "$link"
+                emit error api-error "workflows: $(api_error "$body") | $link"
                 return
             fi
         fi
         if [ "$wf_active" -gt 0 ]; then
-            printf 'no-checks\tno-checks\t%d active workflow(s), none ran on head | %s\n' \
-                "$wf_active" "$link"
+            emit no-checks no-checks "$wf_active active workflow(s), none ran on head | $link"
         else
             local why='no CI configured'
             [ "$actions_off" -eq 1 ] && why='Actions disabled'
             [ "$checks_404" -eq 1 ] && why="$why, checks API unavailable"
-            printf 'no-ci\tno-ci\t%s | %s\n' "$why" "$link"
+            emit no-ci no-ci "$why | $link"
         fi
         return
     fi
 
-    printf 'success\tsuccess\t%s\n' "$link"
+    emit success success "$link"
 }
 
 # ---------------------------------------------------------------------------
 # Rendering
 # ---------------------------------------------------------------------------
 
-# render_line <repo> <branch> <state> <label> <detail>
+# render_line <repo> <branch> <pushed> <state> <label> <detail>
 render_line() {
-    local repo="$1" branch="$2" state="$3" label="$4" detail="$5" color mark
+    local repo="$1" branch="$2" pushed="$3" state="$4" label="$5" detail="$6" color mark
     case "$state" in
         success)   color="$GREEN";  mark="✔" ;;
         failure)   color="$RED";    mark="✖" ;;
@@ -345,9 +433,10 @@ render_line() {
         empty)     color="$YELLOW"; mark="○" ;;
         *)         color="$RED";    mark="‼"; label="internal-error" ;;
     esac
-    printf '%s%s%s %-40s %s%-12s%s %s%-10s%s %s%s%s\n' \
+    printf '%s%s%s %-40s %s%-12s%s %s%-30s%s %s%-10s%s %s%s%s\n' \
         "$color" "$mark" "$RESET" "$ORG/$repo" \
         "$DIM" "${branch:-(none)}" "$RESET" \
+        "$DIM" "$(fmt_pushed "$pushed")" "$RESET" \
         "$color" "$label" "$RESET" \
         "$DIM" "$detail" "$RESET"
 }
@@ -364,9 +453,9 @@ if [ "${1:-}" = "--report" ]; then
     while ! mkdir "$LOCK_DIR" 2>/dev/null; do sleep 0.05; done
     _n=$(( $(cat "$COUNTER_FILE" 2>/dev/null || echo 0) + 1 ))
     printf '%s' "$_n" > "$COUNTER_FILE"
-    IFS=$'\t' read -r _state _label _detail <<< "$_result"
+    IFS=$'\t' read -r _state _label _pushed _detail <<< "$_result"
     printf '%s[%*d/%d]%s ' "$DIM" "${#TOTAL}" "$_n" "$TOTAL" "$RESET"
-    render_line "$_repo" "$_branch" "$_state" "$_label" "$_detail"
+    render_line "$_repo" "$_branch" "$_pushed" "$_state" "$_label" "$_detail"
     rmdir "$LOCK_DIR"
     exit 0
 fi
@@ -434,7 +523,7 @@ failed=(); errored=(); stalled=()
 
 for f in "$tmp"/results/*; do
     [ -f "$f" ] || continue
-    IFS=$'\t' read -r repo branch state label detail < "$f"
+    IFS=$'\t' read -r repo branch state label pushed detail < "$f"
     [ -n "$repo" ] || continue
 
     seen=$((seen + 1))
@@ -442,8 +531,8 @@ for f in "$tmp"/results/*; do
         success)   ok=$((ok + 1)) ;;
         failure)   failed+=("https://github.com/$ORG/$repo") ;;
         error)     errored+=("$ORG/$repo — $detail") ;;
-        cancelled) cancelled=$((cancelled + 1)); stalled+=("$ORG/$repo — $detail") ;;
-        no-checks) nochecks=$((nochecks + 1)); stalled+=("$ORG/$repo — $detail") ;;
+        cancelled) cancelled=$((cancelled + 1)); stalled+=("$ORG/$repo — $detail [pushed $(fmt_pushed "$pushed")]") ;;
+        no-checks) nochecks=$((nochecks + 1)); stalled+=("$ORG/$repo — $detail [pushed $(fmt_pushed "$pushed")]") ;;
         pending)   pending=$((pending + 1)) ;;
         no-ci)     noci=$((noci + 1)) ;;
         empty)     empties=$((empties + 1)) ;;
